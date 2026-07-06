@@ -111,6 +111,9 @@ SUM(Revenue) AS TotalRevenue
 FROM BMW_Data
 GROUP BY Model
 ```
+## SQL QUERY PREVIEW
+
+<img width="1918" height="1020" alt="Screenshot 2026-07-06 145556" src="https://github.com/user-attachments/assets/5e77ea39-0402-42bc-9733-57e4075b601f" />
 
 ---
 
