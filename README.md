@@ -1,202 +1,135 @@
-# BMW Sales Data Analysis Project
+# 🚗 BMW Geo-Sales Dashboard (Power BI)
 
-## Project Overview
+An interactive Power BI dashboard analyzing BMW global sales performance (2019–present), featuring a **live model selector** that displays the corresponding car image and a full sales breakdown (Revenue, Units Sold, Region, Country, Channel, Year-over-Year trend) the moment a model is clicked.
 
-This project analyzes BMW sales data using **Python, SQL Server, and Power BI** to discover business insights, identify sales trends, and create an interactive dashboard for decision-making.
-
-The workflow follows a complete data analytics process:
-
-Raw Data → Python → SQL → Power BI Dashboard
+![Dashboard Preview](assets/dashboard_preview.png)
+<!-- Add a screenshot of your dashboard here, e.g. assets/dashboard_preview.png -->
 
 ---
 
-## Objectives
+## 📊 Overview
 
-* Clean and preprocess raw sales data
-* Perform exploratory data analysis (EDA)
-* Identify sales trends and patterns
-* Analyze revenue and sales performance
-* Create SQL queries for business insights
-* Build an interactive Power BI dashboard
+This project explores BMW sales data across regions, countries, models, and sales channels, and presents it through a single-page interactive dashboard built in Power BI. The standout feature is a **model-to-image binding**: selecting any BMW model (via bar chart or slicer) instantly swaps the displayed car photo and updates every KPI, chart, and map on the page.
 
----
-
-## Tools and Technologies
-
-* Python
-* Pandas
-* Matplotlib
-* SQL Server
-* Power BI
-* Jupyter Notebook
+**Live metrics on the dashboard:**
+- Total Revenue
+- Total Units Sold
+- YoY Revenue Change %
+- Average Revenue by Country (map)
+- Sum of Revenue by Model (bar chart / selector)
+- Sum of Revenue by Region (donut chart)
+- Selected model's car image (dynamic)
 
 ---
 
-## Project Workflow
+## 🗂️ Dataset
 
-### Step 1: Data Collection
+**File:** `BMW_Clean_Data.csv`
 
-* Import BMW sales dataset (.csv)
-* Understand dataset structure
-* Identify columns and business requirements
+| Column | Description |
+|---|---|
+| `Date` | Transaction date |
+| `Year` | Transaction year |
+| `Model` | BMW model (e.g., BMW M2, BMW X5, BMW iX) |
+| `Revenue` | Revenue generated (USD) |
+| `Quantity Sold` | Units sold |
+| `Region` | Continent/region of sale |
+| `Country` | Country of sale |
+| `Channel` | Sales channel (Wholesale / Retail) |
 
-### Step 2: Data Cleaning Using Python
+Covers 27 BMW models sold across 5+ regions and dozens of countries.
 
-Tasks performed:
+**Note:** During cleaning, a stray `Model = "0"` row was filtered out in Power Query (`Home > Remove Rows` or a `Model <> "0"` filter) before modeling.
 
-* Removed duplicate records
-* Handled missing values
-* Converted data types
-* Renamed columns
-* Formatted date columns
+---
 
-Libraries used:
+## 🖼️ Model Image Mapping
 
-```python
-import pandas as pd
-import matplotlib.pyplot as plt
+**File:** `Model_Image_Mapping.csv`
+
+A lookup table mapping each of the 26 BMW models to a real, publicly licensed image hosted on **Wikimedia Commons**, using Commons' stable hotlink endpoint:
+
+```
+https://commons.wikimedia.org/wiki/Special:FilePath/<exact file name>
 ```
 
----
+This table is related to the main dataset on the `Model` column (many-to-one) and powers the dynamic image display.
 
-### Step 3: Exploratory Data Analysis (EDA)
-
-Business questions analyzed:
-
-* What is total revenue?
-* Which BMW model has highest sales?
-* Which region generates most revenue?
-* What are monthly sales trends?
-* What is average sales performance?
+> Images are sourced from Wikimedia Commons under their respective Creative Commons licenses (CC BY / CC BY-SA). See each file's Commons page for attribution details if redistributing.
 
 ---
 
-### Step 4: Data Visualization
+## 🧮 Key DAX Measures
 
-Charts created:
+```dax
+Selected Car Image = 
+VAR CurrentModel = SELECTEDVALUE(BMW_Clean_Data[Model])
+RETURN
+    LOOKUPVALUE(Model_Image_Mapping[ImageURL], Model_Image_Mapping[Model], CurrentModel)
 
-1. Line Chart – Sales Trend
-2. Bar Chart – Top Selling Models
-3. Pie Chart – Region Sales Distribution
-4. Donut Chart – Revenue Share
-5. Histogram – Revenue Distribution
-6. Scatter Plot – Units Sold vs Revenue
-7. Box Plot – Outlier Detection
-8. Area Chart – Monthly Sales
-9. Horizontal Bar Chart – Model Revenue
-10. Correlation Heatmap
+Total Revenue = SUM(BMW_Clean_Data[Revenue])
 
----
+Total Units Sold = SUM(BMW_Clean_Data[Quantity Sold])
 
-### Step 5: SQL Analysis
+Avg Revenue per Unit = DIVIDE([Total Revenue], [Total Units Sold])
 
-Created SQL queries for:
-
-* Total Revenue
-* Top Selling Models
-* Region-wise Revenue
-* Monthly Sales Analysis
-* Average Revenue
-* Sales Performance Metrics
-
-Views were created for Power BI integration.
-
-Example:
-
-```sql
-CREATE VIEW vw_TopModels AS
-
-SELECT Model,
-SUM(Revenue) AS TotalRevenue
-FROM BMW_Data
-GROUP BY Model
+YoY Revenue Change % = 
+VAR CurrentYearRevenue = [Total Revenue]
+VAR PriorYearRevenue = 
+    CALCULATE([Total Revenue], BMW_Clean_Data[Year] = MAX(BMW_Clean_Data[Year]) - 1)
+RETURN 
+    DIVIDE(CurrentYearRevenue - PriorYearRevenue, PriorYearRevenue)
 ```
-## SQL QUERY PREVIEW
 
-<img width="1918" height="1020" alt="Screenshot 2026-07-06 145556" src="https://github.com/user-attachments/assets/5e77ea39-0402-42bc-9733-57e4075b601f" />
-
----
-
-### Step 6: Power BI Dashboard
-
-Dashboard contains:
-
-* KPI Cards
-* Sales Trend Analysis
-* Top Models Visualization
-* Revenue Distribution
-* Regional Analysis
-* Interactive Filters
-* Detailed Report Tables
+**Important:** The car image is bound to the *measure* (`Selected Car Image`), not the raw `ImageURL` column. Binding a column directly forces Power BI to ask for a First/Last aggregation and breaks the "click to change image" interactivity — the measure re-evaluates per selection automatically.
 
 ---
 
-## Key Insights
+## 🛠️ Tools & Tech
 
-* Identified highest-performing BMW models
-* Detected revenue trends over time
-* Compared regional sales performance
-* Found patterns in customer purchasing behavior
+- **Power BI Desktop** — data modeling, DAX, report design
+- **Power Query** — data cleaning
+- **Wikimedia Commons** — image sourcing
+- Visuals used: Image visual, Map, Bar chart, Donut chart, Card (KPI)
 
 ---
 
-## Project Structure
+## 🚀 How to Use
 
-```text
-BMW-Sales-Analysis/
+1. Clone this repository
+   ```bash
+   git clone https://github.com/<your-username>/<repo-name>.git
+   ```
+2. Open `BMW_Sales_Dashboard.pbix` in Power BI Desktop
+3. If prompted, update the data source path for `BMW_Clean_Data.csv` and `Model_Image_Mapping.csv` to their location on your machine
+4. Click any bar in **Sum of Revenue by Model** (or use the model slicer) to see the image and all details update live
 
-│
-├── BMW_Sales_Data.csv
+---
+
+## 📁 Repository Structure
+
+```
 ├── BMW_Clean_Data.csv
-├── Data_Cleaning.ipynb
-├── SQL_Queries.sql
-├── PowerBI_Dashboard.pbix
-├── Images
-│     ├── Dashboard.png
-│     └── Charts.png
-│
+├── Model_Image_Mapping.csv
+├── BMW_Sales_Dashboard.pbix
+├── assets/
+│   └── dashboard_preview.png
 └── README.md
 ```
 
 ---
 
-## How to Run Project
+## 👤 Author
 
-1. Clone repository
+**Chaitanya Darekar**
+Data Analyst | Power BI · SQL · Python · Excel Automation
 
-```bash
-git clone <repository-link>
-```
-
-2. Install required libraries
-
-```bash
-pip install pandas matplotlib
-```
-
-3. Run Jupyter Notebook
-
-```bash
-jupyter notebook
-```
-
-4. Execute SQL scripts in SQL Server
-
-5. Connect SQL Server to Power BI
+- Portfolio: [chaitanyadarekar2002.github.io](https://chaitanyadarekar2002.github.io)
+- LinkedIn: [linkedin.com/in/chaitanyadarekar](https://linkedin.com/in/chaitanyadarekar02)
+- GitHub: [github.com/ChaitanyaDarekar2002](https://github.com/ChaitanyaDarekar2002)
 
 ---
 
-## Future Improvements
+## 📄 License
 
-* Add machine learning sales prediction
-* Deploy dashboard online
-* Create automated data pipeline
-* Add advanced KPIs
-
----
-
-## Author
-
-Data Analyst Portfolio Project
-
-Created using Python, SQL, and Power BI
+This project's code and analysis are open for reuse — feel free to fork and adapt. Car images retain their original Wikimedia Commons licenses (see `Model_Image_Mapping.csv` source links for attribution per file).
