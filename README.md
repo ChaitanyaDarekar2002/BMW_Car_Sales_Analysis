@@ -2,7 +2,8 @@
 
 An interactive Power BI dashboard analyzing BMW global sales performance (2019–present), featuring a **live model selector** that displays the corresponding car image and a full sales breakdown (Revenue, Units Sold, Region, Country, Channel, Year-over-Year trend) the moment a model is clicked.
 
-![Dashboard Preview](assets/dashboard_preview.png)
+<img width="1918" height="980" alt="Screenshot 2026-07-07 144633" src="https://github.com/user-attachments/assets/524a3563-09db-4d9d-9ff7-e7782f2ed5be" />
+
 <!-- Add a screenshot of your dashboard here, e.g. assets/dashboard_preview.png -->
 
 ---
